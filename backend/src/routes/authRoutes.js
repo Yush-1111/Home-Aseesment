@@ -4,6 +4,44 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
 const router = express.Router();
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+router.post('/register', async (req, res) => {
+  const { name, email, password } = req.body;
+
+  if (!name || !name.trim()) {
+    return res.status(400).json({ message: 'Name is required' });
+  }
+
+  if (!email || !emailRegex.test(email)) {
+    return res.status(400).json({ message: 'Invalid email format' });
+  }
+
+  if (!password || password.length < 6) {
+    return res.status(400).json({ message: 'Password must be at least 6 characters' });
+  }
+
+  try {
+    const normalizedEmail = email.toLowerCase();
+    const existingUser = await User.findOne({ email: normalizedEmail });
+
+    if (existingUser) {
+      return res.status(409).json({ message: 'User already exists. Please login.' });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    await User.create({
+      name: name.trim(),
+      email: normalizedEmail,
+      password: hashedPassword
+    });
+
+    return res.status(201).json({ message: 'Registration successful. Please login.' });
+  } catch (error) {
+    return res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
 
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
@@ -12,7 +50,6 @@ router.post('/login', async (req, res) => {
     return res.status(400).json({ message: 'Email and password are required' });
   }
 
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email)) {
     return res.status(400).json({ message: 'Invalid email format' });
   }

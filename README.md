@@ -4,8 +4,9 @@ Simple full stack app built with React, Node.js, Express, and MongoDB.
 
 ## Features
 
+- User registration with validation
 - Login with validation (email format + required password)
-- Backend login API using MongoDB-stored user data
+- Backend auth APIs using MongoDB-stored user data
 - JWT-based authentication
 - Protected dashboard route
 - Dashboard shows logged-in user name + dummy lists (Leads, Tasks, Users)
@@ -31,7 +32,6 @@ Simple full stack app built with React, Node.js, Express, and MongoDB.
 cd backend
 cp .env.example .env
 npm install
-npm run seed
 npm run dev
 ```
 
@@ -44,18 +44,15 @@ In a new terminal:
 ```bash
 cd frontend
 npm install
+cp .env.example .env
 npm run dev
 ```
 
 Frontend: `http://localhost:5173`
 
-## Demo Credentials
-
-- Email: `test@example.com`
-- Password: `password123`
-
 ## APIs
 
+- `POST /api/auth/register`
 - `POST /api/auth/login`
 - `GET /api/dashboard` (requires `Authorization: Bearer <token>`)
 - `GET /api/health`

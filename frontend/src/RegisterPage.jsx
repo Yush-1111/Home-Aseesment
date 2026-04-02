@@ -1,13 +1,12 @@
 import { useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import api from './api';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const [form, setForm] = useState({ email: '', password: '' });
+  const [form, setForm] = useState({ name: '', email: '', password: '' });
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [serverError, setServerError] = useState('');
@@ -15,12 +14,16 @@ export default function LoginPage() {
   function validate() {
     const nextErrors = {};
 
+    if (!form.name.trim()) {
+      nextErrors.name = 'Name is required';
+    }
+
     if (!emailRegex.test(form.email)) {
       nextErrors.email = 'Please enter a valid email address';
     }
 
-    if (!form.password.trim()) {
-      nextErrors.password = 'Password is required';
+    if (form.password.length < 6) {
+      nextErrors.password = 'Password must be at least 6 characters';
     }
 
     setErrors(nextErrors);
@@ -45,16 +48,18 @@ export default function LoginPage() {
 
     try {
       setSubmitting(true);
-      const response = await api.post('/auth/login', {
+      await api.post('/auth/register', {
+        name: form.name,
         email: form.email,
         password: form.password
       });
 
-      localStorage.setItem('token', response.data.token);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
-      navigate('/dashboard');
+      navigate('/login', {
+        replace: true,
+        state: { message: 'Registration successful. Please login.' }
+      });
     } catch (error) {
-      setServerError(error.response?.data?.message || 'Login failed. Please try again.');
+      setServerError(error.response?.data?.message || 'Registration failed. Please try again.');
     } finally {
       setSubmitting(false);
     }
@@ -63,13 +68,21 @@ export default function LoginPage() {
   return (
     <div className="page auth-page">
       <div className="card auth-card">
-        <h1>Login</h1>
-        <p>Sign in to access your dashboard.</p>
-        {location.state?.message ? (
-          <small className="success-message">{location.state.message}</small>
-        ) : null}
+        <h1>Register</h1>
+        <p>Create your account to continue.</p>
 
         <form onSubmit={onSubmit} noValidate>
+          <label htmlFor="name">Name</label>
+          <input
+            id="name"
+            name="name"
+            type="text"
+            value={form.name}
+            onChange={onChange}
+            placeholder="Enter your name"
+          />
+          {errors.name ? <small className="error">{errors.name}</small> : null}
+
           <label htmlFor="email">Email</label>
           <input
             id="email"
@@ -77,7 +90,7 @@ export default function LoginPage() {
             type="email"
             value={form.email}
             onChange={onChange}
-            placeholder="test@example.com"
+            placeholder="Enter email"
           />
           {errors.email ? <small className="error">{errors.email}</small> : null}
 
@@ -95,12 +108,12 @@ export default function LoginPage() {
           {serverError ? <small className="error server">{serverError}</small> : null}
 
           <button type="submit" disabled={submitting}>
-            {submitting ? 'Logging in...' : 'Login'}
+            {submitting ? 'Creating account...' : 'Register'}
           </button>
         </form>
 
         <p className="auth-switch">
-          New user? <Link to="/register">Register</Link>
+          Already have an account? <Link to="/login">Login</Link>
         </p>
       </div>
     </div>

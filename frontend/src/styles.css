@@ -83,6 +83,24 @@ button:disabled {
   font-size: 14px;
 }
 
+.auth-switch {
+  margin: 16px 0 0;
+  color: #475569;
+  font-size: 14px;
+}
+
+.auth-switch a {
+  color: #0f172a;
+  font-weight: 700;
+}
+
+.success-message {
+  display: block;
+  margin: 0 0 16px;
+  color: #166534;
+  font-size: 13px;
+}
+
 .error {
   color: #dc2626;
   font-size: 12px;
